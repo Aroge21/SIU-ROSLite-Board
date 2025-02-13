@@ -1,5 +1,7 @@
 @echo off
 
+REM Set directories for compiler
+
 set "source_path=.\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC"
 set "destination_path=.\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS"
 
