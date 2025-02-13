@@ -6,13 +6,12 @@
 #include "packet.h"
 
 float battery_volt = 0.0f; /* 电池电压全局变量, 单位 v */
+static uint16_t battery_min_limit = 6300; /* 低压报警值 */
+
 static uint16_t adc_value[2];
 
-extern osMessageQueueId_t lvgl_event_queueHandle;
-#if ENABLE_BLUETOOTH&&ENABLE_BLUETOOTH_BATTERY_REPORT /* 开启蓝牙电压报告后引入 */
-extern osMessageQueueId_t bluetooth_tx_queueHandle; /* 蓝牙数据发送队列 */
-#endif
 
+extern osMessageQueueId_t lvgl_event_queueHandle;
 
 void battery_check_timer_callback(void *argument)
 {
@@ -45,18 +44,11 @@ void battery_check_timer_callback(void *argument)
         *((uint16_t*)object.structure.data) = (int)(battery_volt + 0.5f);
         osMessageQueuePut(lvgl_event_queueHandle, &object, 0, 0);
 #endif
-
-#if  ENABLE_BLUETOOTH&&ENABLE_BLUETOOTH_BATTERY_REPORT
-        char msg[8];
-        sprintf(&msg[1], "V%dV", (int)(battery_volt + 0.5f)); /* 组织蓝牙电量消息 */
-        msg[0] = strlen(&msg[1]);
-        osMessageQueuePut(bluetooth_tx_queueHandle, msg, 0, 0); /* 压入发送队列 */
-#endif
     }
 
 #if ENABLE_BATTERY_LOW_ALARM
     static int count = 0;
-    if(battery_volt < BATTERY_LOW_ALARM_THRESHOLD && battery_volt > 4900) {
+    if(battery_volt < battery_min_limit && battery_volt > 4900) {
         count++;
     } else {
         count = 0;
@@ -67,3 +59,10 @@ void battery_check_timer_callback(void *argument)
     }
 #endif
 }
+
+
+void change_battery_limit(uint16_t limit)
+{
+    battery_min_limit = limit;
+}
+

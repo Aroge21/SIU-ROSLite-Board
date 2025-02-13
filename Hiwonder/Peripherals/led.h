@@ -17,6 +17,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+#define LED_NUM  3
+
 typedef enum {
     LED_STAGE_START_NEW_CYCLE,
     LED_STAGE_WATTING_OFF,

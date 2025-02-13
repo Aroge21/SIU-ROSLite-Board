@@ -1,7 +1,7 @@
 /**
  * @file buzzer.c
- * @author Lu Yongping (Lucas@hiwonder.com)
- * @brief 实现硬件&系统无关的蜂鸣器控制
+ * @author 
+ * @brief Implementation of hardware & system-independent buzzer control
  * @version 0.1
  * @date 2023-05-18
  *
@@ -12,46 +12,46 @@
 
 void buzzer_task_handler(BuzzerObjectTypeDef *self, uint32_t period)
 {
-    /* 尝试从队列中取的新的控制数据， 如果成功取出则重置状态机重新开始一个控制循环 */
+    /* Try to get new control data from the queue, if successful, reset the state machine to start a new control cycle */
     if(self->get_ctrl_block(self, &self->ctrl_structure) == 0) {
         self->stage = BUZZER_STAGE_START_NEW_CYCLE;
     }
-    /* 状态机处理 */
+    /* State machine handling */
     switch(self->stage) {
         case BUZZER_STAGE_START_NEW_CYCLE: {
             if(self->ctrl_structure.ticks_on > 0 && self->ctrl_structure.freq > 0) {
-                self->set_pwm(self, self->ctrl_structure.freq); /* 鸣响蜂鸣器 */
-                if(self->ctrl_structure.ticks_off > 0) {/* 静音时间不为 0 即为 嘀嘀响 否则就是长鸣 */
+                self->set_pwm(self, self->ctrl_structure.freq); /* Sound the buzzer */
+                if(self->ctrl_structure.ticks_off > 0) { /* If the silent time is not 0, it will beep, otherwise it will be a continuous sound */
                     self->ticks_count = 0;
-                    self->stage = BUZZER_STAGE_WATTING_OFF; /* 等到鸣响时间结束 */
-                }else{
-					self->stage = BUZZER_STAGE_IDLE; /* 长鸣，转入空闲 */
-				}
-            } else { /* 只要鸣响时间为 0 即为静音 */
+                    self->stage = BUZZER_STAGE_WAITING_OFF; /* Wait for the sound time to end */
+                } else {
+                    self->stage = BUZZER_STAGE_IDLE; /* Continuous sound, switch to idle */
+                }
+            } else { /* As long as the sound time is 0, it will be silent */
                 self->set_pwm(self, 0);
-				self->stage = BUZZER_STAGE_IDLE;  /* 长静音，转入空闲 */
+                self->stage = BUZZER_STAGE_IDLE;  /* Long silence, switch to idle */
             }
             break;
         }
-        case BUZZER_STAGE_WATTING_OFF: {
+        case BUZZER_STAGE_WAITING_OFF: {
             self->ticks_count += period;
-            if(self->ticks_count >= self->ctrl_structure.ticks_on) { /* 鸣响时间结束 */
+            if(self->ticks_count >= self->ctrl_structure.ticks_on) { /* Sound time ends */
                 self->set_pwm(self, 0);
-                self->stage = BUZZER_STAGE_WATTING_PERIOD_END;
+                self->stage = BUZZER_STAGE_WAITING_PERIOD_END;
             }
             break;
         }
-        case BUZZER_STAGE_WATTING_PERIOD_END: { /* 等待周期结束 */
+        case BUZZER_STAGE_WAITING_PERIOD_END: { /* Wait for the period to end */
             self->ticks_count += period;
             if(self->ticks_count >= (self->ctrl_structure.ticks_off + self->ctrl_structure.ticks_on)) {
                 self->ticks_count -= (self->ctrl_structure.ticks_off + self->ctrl_structure.ticks_on);
-                if(self->ctrl_structure.repeat == 1) { /* 剩余重复次数为1时就可以结束此次控制任务 */
+                if(self->ctrl_structure.repeat == 1) { /* When the remaining repeat count is 1, the control task can be ended */
                     self->set_pwm(self, 0);
                     self->stage = BUZZER_STAGE_IDLE;
                 } else {
                     self->set_pwm(self, self->ctrl_structure.freq);
                     self->ctrl_structure.repeat = self->ctrl_structure.repeat == 0 ? 0 : self->ctrl_structure.repeat - 1;
-                    self->stage = BUZZER_STAGE_WATTING_OFF;
+                    self->stage = BUZZER_STAGE_WAITING_OFF;
                 }
             }
             break;
@@ -65,12 +65,12 @@ void buzzer_task_handler(BuzzerObjectTypeDef *self, uint32_t period)
 }
 
 
-int buzzer_on( BuzzerObjectTypeDef *self, uint32_t freq)
+int buzzer_on(BuzzerObjectTypeDef *self, uint32_t freq)
 {
     BuzzerCtrlTypeDef ctrl_structure = {
         .freq = freq,
         .ticks_on = 1,  
-        .ticks_off = 0, /* 静音时间为0 长鸣 */
+        .ticks_off = 0, /* Silent time is 0, continuous sound */
         .repeat = 0,
     };
     return self->put_ctrl_block(self, &ctrl_structure);
@@ -80,7 +80,7 @@ int buzzer_off(BuzzerObjectTypeDef *self)
 {
     BuzzerCtrlTypeDef ctrl_structure = {
         .freq = 0,
-        .ticks_on = 0, /* 鸣响时间为0就是静音 */
+        .ticks_on = 0, /* Sound time is 0, silent */
         .ticks_off = 0,
         .repeat = 0,
     };
@@ -103,4 +103,3 @@ void buzzer_object_init(BuzzerObjectTypeDef *self)
 {
     self->stage = BUZZER_STAGE_IDLE;
 }
-

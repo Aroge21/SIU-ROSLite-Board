@@ -42,7 +42,7 @@ static uint8_t u8x8_byte_hw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void
             break;
         }
         case U8X8_MSG_BYTE_END_TRANSFER: {
-            if (HAL_I2C_Master_Transmit(&hi2c2, OLED_ADDRESS, buffer, buf_idx, 0xFFFF) != HAL_OK) {
+            if (HAL_I2C_Master_Transmit(&hi2c1, OLED_ADDRESS, buffer, buf_idx, 0xFFFF) != HAL_OK) {
                 return 0;
             }
             break;

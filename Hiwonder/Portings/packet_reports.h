@@ -58,23 +58,6 @@ typedef struct {
 }PacketReportSerialServoTypeDef;
 
 typedef struct {
-    uint16_t buttons;
-	uint8_t hat;
-    int8_t lx;
-    int8_t ly;
-    int8_t rx;
-    int8_t ry;
-} PacketReportGamepadTypeDef;
-	
-typedef struct {
-    int16_t channels[16];
-	uint8_t ch17;
-	uint8_t ch18;
-    uint8_t signal_loss;
-    uint8_t fail_safe;
-}PacketReportSBusTypeDef;
-
-typedef struct {
 	uint8_t servo_id;
 	uint8_t sub_command;
 	uint8_t args[8];

@@ -4,7 +4,7 @@
 #include "buzzer.h"
 #include "serial_servo.h"
 #include "packet_reports.h"
-
+#include "motors_param.h"
 
 #pragma pack(1)
 typedef struct {
@@ -101,7 +101,25 @@ typedef struct {
 	uint8_t sub_cmd;
 	uint8_t length;
 	uint8_t data[];
-}OLEDCommandTypeDef;
+} OLEDCommandTypeDef;
+
+//电机类型切换
+typedef struct {
+    uint8_t func;
+    uint8_t type;
+} MotorTypeCtlTypeDef; 
+
+//电压报警值设置
+typedef struct {
+    uint8_t cmd;
+    uint16_t limit;
+} BatteryWarnTypeDef;
+
+//RGB灯结构体
+typedef struct {
+    uint8_t id;
+    uint8_t data[];
+} RGBCtlTypeDef;
 
 #pragma pack()
 
@@ -141,7 +159,7 @@ static void packet_led_handle(struct PacketRawFrame *frame)
 {
     LedCommandTypeDef *cmd = (LedCommandTypeDef*)frame->data_and_checksum;
     uint8_t led_id = cmd->led_id - 1;
-    if(led_id < 1) { /* ID 都是从 1 开始 */
+    if(led_id < 2) { /* ID 都是从 1 开始 */
         led_flash(leds[led_id], cmd->on_time, cmd->off_time, cmd->repeat);
     }
 }
@@ -314,7 +332,7 @@ static void packet_pwm_servo_handle(struct PacketRawFrame *frame)
             PWMServoSetMultiPositionCommandTypeDef *cmd = (PWMServoSetMultiPositionCommandTypeDef *)frame->data_and_checksum;
             for(int i = 0; i < cmd->servo_num; ++i) {
                 if(cmd->elements[i].servo_id <= 4) {
-                    pwm_servo_set_position( pwm_servos[cmd->elements[i].servo_id - 1], cmd->elements[i].pulse, cmd->elements[i].pulse );
+                    pwm_servo_set_position( pwm_servos[cmd->elements[i].servo_id - 1], cmd->elements[i].pulse, cmd->duration);
                 }
             }
             break;
@@ -368,7 +386,6 @@ static void packet_pwm_servo_handle(struct PacketRawFrame *frame)
 * @param frame 数据帧
 * @retval void
 */
-
 static void packet_motor_handle(struct PacketRawFrame *frame)
 {
 
@@ -400,6 +417,73 @@ static void packet_motor_handle(struct PacketRawFrame *frame)
             }
             break;
         }
+        
+        case 5: { //电机类型切换
+            MotorTypeCtlTypeDef *mmsc = (MotorTypeCtlTypeDef *)frame->data_and_checksum;
+            MotorTypeEnum type = MOTOR_TYPE_JGB520;
+//            printf("type:%d",mmsc->type);
+            if(mmsc->type == MOTOR_TYPE_JGB520){
+                type = MOTOR_TYPE_JGB520;
+            }else if(mmsc->type == MOTOR_TYPE_JGB37){
+                type = MOTOR_TYPE_JGB37;
+            }else if(mmsc->type == MOTOR_TYPE_JGA27){
+                type = MOTOR_TYPE_JGA27;
+            }else if(mmsc->type == MOTOR_TYPE_JGB528){
+                type = MOTOR_TYPE_JGB528;
+            }else {
+                type = MOTOR_TYPE_JGB520;
+            }
+            for(int i = 0 ; i < 4 ; i++){
+                set_motor_type(motors[i], type);
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+
+/**
+* @brief 电池报警设置回调处理
+* @param frame 数据帧
+* @retval void
+*/
+static void packet_battery_limit_handle(struct PacketRawFrame *frame)
+{
+    BatteryWarnTypeDef *cmd = (BatteryWarnTypeDef*)frame->data_and_checksum;
+    switch(frame->data_and_checksum[0]) {
+        case 1: {
+            change_battery_limit(cmd->limit);
+        }break;
+        default:
+            break;
+    }
+}
+
+
+/**
+* @brief RGB控制
+* @param frame 数据帧
+* @retval void
+*/
+static void packet_RGB_Ctl_handle(struct PacketRawFrame *frame)
+{
+    RGBCtlTypeDef *cmd = (RGBCtlTypeDef*)frame->data_and_checksum;
+    switch(cmd->id) {
+        case 0: {
+//            for(int i = 0 ; i < Pixel_S1_NUM ; i++)
+//            {
+//                set_id_rgb_color(i , &cmd->data[i*3]);
+//            }
+            set_rgb_color(cmd->data);
+        }break;
+        
+        case 1: 
+        case 2: {
+            set_id_rgb_color((cmd->id-1) , cmd->data);
+        }break;
+        
         default:
             break;
     }
@@ -413,6 +497,8 @@ void packet_handle_init(void)
     packet_register_callback(&packet_controller, PACKET_FUNC_MOTOR, packet_motor_handle);
     packet_register_callback(&packet_controller, PACKET_FUNC_BUS_SERVO, packet_serial_servo_handle);
     packet_register_callback(&packet_controller, PACKET_FUNC_PWM_SERVO, packet_pwm_servo_handle);
+    packet_register_callback(&packet_controller, PACKET_FUNC_SYS, packet_battery_limit_handle);
+    packet_register_callback(&packet_controller, PACKET_FUNC_RGB, packet_RGB_Ctl_handle);
 #if ENABLE_OLED
 	packet_register_callback(&packet_controller, PACKET_FUNC_OLED, packet_oled_handle);
 #endif

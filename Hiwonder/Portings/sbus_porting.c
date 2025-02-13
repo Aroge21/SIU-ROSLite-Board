@@ -15,7 +15,6 @@
 #include "lwrb.h"
 #include "usart.h"
 #include "global.h"
-#include "gui_guider.h"
 #include "packet_reports.h"
 
 #define SBUS_RX_DMA_BUFFER_SIZE 32 /* SBUS DMA 接收缓存长度 */
