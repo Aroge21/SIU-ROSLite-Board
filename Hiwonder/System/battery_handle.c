@@ -6,7 +6,7 @@
 #include "packet.h"
 
 float battery_volt = 0.0f;/*Global variable of battery voltage, unit v */
-static uint16_t battery_min_limit = 6300;/*Low voltage alarm value */
+static uint16_t battery_min_limit = 10600;/*Low voltage alarm value */
 
 static uint16_t adc_value[2];
 

@@ -1,7 +1,7 @@
 /**
  * @file pid.c
  * @author Lu Yongping (Lucas@hiwonder.com)
- * @brief PID实现
+ * @brief PID
  * @version 0.1
  * @date 2023-07-12
  *
