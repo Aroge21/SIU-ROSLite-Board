@@ -5,8 +5,8 @@
 #include "packet_reports.h"
 #include "packet.h"
 
-float battery_volt = 0.0f; /* 电池电压全局变量, 单位 v */
-static uint16_t battery_min_limit = 6300; /* 低压报警值 */
+float battery_volt = 0.0f;/*Global variable of battery voltage, unit v */
+static uint16_t battery_min_limit = 6300;/*Low voltage alarm value */
 
 static uint16_t adc_value[2];
 
@@ -15,18 +15,18 @@ extern osMessageQueueId_t lvgl_event_queueHandle;
 
 void battery_check_timer_callback(void *argument)
 {
-    if(adc_value[0] != 0 && adc_value[0] != 4095) { /* 内部参考电压不能为0, 否则无法计算 */
-        //float vdda = 3300.0f * ((float)(*((__IO uint16_t*)(0x1FFF7A2A)))) / ((float)adc_value[0]);
-        //float volt = vdda / 4095.0f * ((float)adc_value[1]) * 11.0f ; /* 100k + 10k 电阻分压， 实际电压是测量电压的11倍 */
+    if(adc_value[0] != 0 && adc_value[0] != 4095) {/*The internal reference voltage cannot be 0, otherwise it cannot be calculated */
+        //float vdda = 3300.0f *((float)(*((__IO uint16_t*)(0x1FFF7A2A)))) /((float)adc_value[0]);
+        //float volt = vdda /4095.0f *((float)adc_value[1]) *11.0f ; /*100k + 10k Resistor voltage divider, the actual voltage is 11 times the measured voltage */
 		float volt = 1210.0f / ((float)adc_value[0]) * ((float)adc_value[1]) * 11.0f;
-        volt = volt > 20000 ? 0 : volt; /* ADC读取值超过最大允许供电电压，数据错误 */
+        volt = volt > 20000 ? 0 : volt;/*ADC read value exceeds the maximum allowable power supply voltage, data error */
         battery_volt = battery_volt == 0 ? volt : battery_volt * 0.95f + volt * 0.05f;
     }
     HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_value, 2);
     static int battery_report_count = 0;
     battery_report_count++;
 
-    if(battery_report_count > (int)(1 * 1000 / BATTERY_TASK_PERIOD)) { /* 定时发送蓝牙电压报告 */
+    if(battery_report_count > (int)(1 * 1000 / BATTERY_TASK_PERIOD)) {/*Send Bluetooth voltage reports regularly */
         battery_report_count = 0;
 		PacketReportBatteryVoltageTypeDef report;
 		report.sub_cmd = 0x04;
@@ -53,7 +53,7 @@ void battery_check_timer_callback(void *argument)
     } else {
         count = 0;
     }
-    if(count > (int)(10 * 1000 / BATTERY_TASK_PERIOD)) { /* 每 10s 触发一次警报声 */
+    if(count > (int)(10 * 1000 / BATTERY_TASK_PERIOD)) {/*Alarm sound is triggered every 10 seconds */
         buzzer_didi(buzzers[0], 2100, 800, 200, 5);
         count = 0;
     }

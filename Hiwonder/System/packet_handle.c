@@ -32,20 +32,20 @@ typedef struct {
     uint8_t motor_mask;
 } MotorMultiStopCommandTypeDef;
 
-/* 串口舵机 */
+/*Serial servo */
 typedef struct {
     uint8_t cmd;
     uint8_t servo_id;
     uint8_t args[];
 } SerialServoCommandTypeDef;
 
-/* 串口舵机 */
+/*Serial servo */
 typedef struct {
     uint8_t cmd;
     uint8_t servo_num;
 	uint8_t args[];
 } SerialServoMultiCommandTypeDef;
-/* 串口舵机 */
+/*Serial servo */
 typedef struct {
     uint8_t cmd;
     uint16_t duration;
@@ -56,7 +56,7 @@ typedef struct {
     } elements[];
 } SerialServoSetPositionCommandTypeDef;
 
-/* PWM 舵机 */
+/*PWM servo */
 typedef struct {
     uint8_t cmd;
     uint8_t servo_id;
@@ -79,7 +79,7 @@ typedef struct {
         uint16_t pulse;
     } elements[];
 } PWMServoSetMultiPositionCommandTypeDef;
-/* LED */
+/*LED */
 
 typedef struct {
     uint8_t led_id;
@@ -103,19 +103,19 @@ typedef struct {
 	uint8_t data[];
 } OLEDCommandTypeDef;
 
-//电机类型切换
+//Motor type switching
 typedef struct {
     uint8_t func;
     uint8_t type;
 } MotorTypeCtlTypeDef; 
 
-//电压报警值设置
+//Voltage alarm value setting
 typedef struct {
     uint8_t cmd;
     uint16_t limit;
 } BatteryWarnTypeDef;
 
-//RGB灯结构体
+//RGB lamp structure
 typedef struct {
     uint8_t id;
     uint8_t data[];
@@ -132,12 +132,12 @@ static void packet_oled_handle(struct PacketRawFrame *frame)
 	OLEDCommandTypeDef *cmd = (OLEDCommandTypeDef*)frame->data_and_checksum;
 	osMutexAcquire(oled_mutexHandle, osWaitForever);
 	switch(cmd->sub_cmd) {
-		case 0x01: { /* 设置 SSID */
+		case 0x01: {/*Set SSID */
 			memcpy(oled_l1, cmd->data, cmd->length);
 			oled_l1[cmd->length] = '\0';
 			break;
 		}
-		case 0x02:{ /* 设置 IP 地址 */
+		case 0x02:{/*Set IP address */
 			memcpy(oled_l2, cmd->data, cmd->length);
 			oled_l2[cmd->length] = '\0';
 			break;
@@ -151,23 +151,23 @@ static void packet_oled_handle(struct PacketRawFrame *frame)
 #endif
 
 /**
-* @brief 串口命令回调处理
-* @param frame 数据帧
-* @retval void
+*@brief Serial port command callback processing
+*@param frame dataframe
+*@retval void
 */
 static void packet_led_handle(struct PacketRawFrame *frame)
 {
     LedCommandTypeDef *cmd = (LedCommandTypeDef*)frame->data_and_checksum;
     uint8_t led_id = cmd->led_id - 1;
-    if(led_id < 2) { /* ID 都是从 1 开始 */
+    if(led_id < 2) {/*IDs all start from 1 */
         led_flash(leds[led_id], cmd->on_time, cmd->off_time, cmd->repeat);
     }
 }
 
 /**
-* @brief 串口命令回调处理
-* @param frame 数据帧
-* @retval void
+*@brief Serial port command callback processing
+*@param frame dataframe
+*@retval void
 */
 static void packet_buzzer_handle(struct PacketRawFrame *frame)
 {
@@ -187,21 +187,21 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
 {
     PacketReportSerialServoTypeDef report;
     switch(frame->data_and_checksum[0]) {
-        case 0x01: { /* 舵机控制 */
+        case 0x01: {/*Servo control */
             SerialServoSetPositionCommandTypeDef *cmd = (SerialServoSetPositionCommandTypeDef *)frame->data_and_checksum;
             for(int i = 0; i < cmd->servo_num; i++) {
                 serial_servo_set_position(&serial_servo_controller, cmd->elements[i].servo_id, cmd->elements[i].position, cmd->duration);
             }
             break;
         }
-        case 0x03: { /* 停止舵机 */
+        case 0x03: {/*Stop the servo */
             SerialServoMultiCommandTypeDef *cmd = (SerialServoMultiCommandTypeDef *)frame->data_and_checksum;
 			for(int i = 0; i < cmd->servo_num; i++) {
 				serial_servo_stop(&serial_servo_controller, cmd->args[i]);
 			}
             break;
         }
-        case 0x05: { /* 位置读取 */
+        case 0x05: {/*Position reading */
             int16_t position = 0;
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd,  serial_servo_read_position(&serial_servo_controller, cmd->servo_id, &position));
@@ -209,7 +209,7 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
             packet_transmit(&packet_controller, PACKET_FUNC_BUS_SERVO, &report, 5);
             break;
         }
-        case 0x07: { /* 输入电压读取 */
+        case 0x07: {/*Input voltage read */
             uint16_t vin = 0;
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd, serial_servo_read_vin(&serial_servo_controller, cmd->servo_id, &vin));
@@ -217,7 +217,7 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
             packet_transmit(&packet_controller, PACKET_FUNC_BUS_SERVO, &report, 5);
             break;
         }
-        case 0x09: { /* 温度读取 */
+        case 0x09: {/*Temperature reading */
             uint8_t temp = 0;
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd,  serial_servo_read_temp(&serial_servo_controller, cmd->servo_id, &temp));
@@ -225,17 +225,17 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
             packet_transmit(&packet_controller, PACKET_FUNC_BUS_SERVO, &report, 4);
             break;
         }
-        case 0x0B: { /* 卸载动力 */
+        case 0x0B: {/*Unload power */
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             serial_servo_load_unload(&serial_servo_controller, cmd->servo_id, 0);
             break;
         }
-        case 0x0C: { /* 加载动力 */
+        case 0x0C: {/*Loading power */
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             serial_servo_load_unload(&serial_servo_controller, cmd->servo_id, 1);
             break;
         }
-		case 0x0D: { /* 动力状态读取 */
+		case 0x0D: {/*Power state reading */
             uint8_t load_unload;
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd, serial_servo_read_load_unload(&serial_servo_controller, cmd->servo_id, &load_unload));
@@ -243,12 +243,12 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
             packet_transmit(&packet_controller, PACKET_FUNC_BUS_SERVO, &report, 4);
             break;
 		}			
-        case 0x10: { /* ID 写入 */
+        case 0x10: {/*ID write */
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             serial_servo_set_id(&serial_servo_controller, cmd->servo_id, cmd->args[0]);
             break;
         }
-        case 0x12: { /* ID 读取 */
+        case 0x12: {/*ID read */
             uint8_t servo_id;
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd, serial_servo_read_id(&serial_servo_controller, cmd->servo_id, &servo_id));
@@ -256,12 +256,12 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
             packet_transmit(&packet_controller, PACKET_FUNC_BUS_SERVO, &report, 4);
             break;
         }
-        case 0x20: { /* 偏差调整 */
+        case 0x20: {/*Deviation adjustment */
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             serial_servo_set_deviation(&serial_servo_controller, cmd->servo_id, cmd->args[0]);
             break;
         }
-        case 0x22: { /* 偏差读取 */
+        case 0x22: {/*Deviation read */
             int8_t dev = 0;
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd, serial_servo_read_deviation(&serial_servo_controller, cmd->servo_id, &dev));
@@ -269,17 +269,17 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
             packet_transmit(&packet_controller, PACKET_FUNC_BUS_SERVO, &report, 4);
             break;
         }
-        case 0x24: { /* 偏差保存 */
+        case 0x24: {/*Deviation saving */
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             serial_servo_save_deviation(&serial_servo_controller, cmd->servo_id);
             break;
         }
-        case 0x30: { /* 位置限制设置 */
+        case 0x30: {/*Position limit settings */
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             serial_servo_set_angle_limit(&serial_servo_controller, cmd->servo_id, *((uint16_t*)(&cmd->args[0])), *((uint16_t*)(&cmd->args[2])));
             break;
         }
-        case 0x32: { /* 位置限制读取 */
+        case 0x32: {/*Position limit read */
             uint16_t limit[2] = {0};
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd, serial_servo_read_angle_limit(&serial_servo_controller, cmd->servo_id, limit));
@@ -287,12 +287,12 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
             packet_transmit(&packet_controller, PACKET_FUNC_BUS_SERVO, &report, 7);
             break;
         }
-        case 0x34: { /* 电压限制设置 */
+        case 0x34: {/*Voltage limit settings */
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             serial_servo_set_vin_limit(&serial_servo_controller, cmd->servo_id, *((uint16_t*)(&cmd->args[0])), *((uint16_t*)(&cmd->args[2])));
             break;
         }
-        case 0x36: { /* 电压限制读取 */
+        case 0x36: {/*Voltage limit read */
             uint16_t limit[2] = {0};
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd, serial_servo_read_vin_limit(&serial_servo_controller, cmd->servo_id, limit));
@@ -300,12 +300,12 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
             packet_transmit(&packet_controller, PACKET_FUNC_BUS_SERVO, &report, 7);
             break;
         }
-        case 0x38: { /* 温度限制设置 */
+        case 0x38: {/*Temperature limit settings */
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             serial_servo_set_temp_limit(&serial_servo_controller, cmd->servo_id, cmd->args[0]);
             break;
         }
-        case 0x3A: { /* 温度限制读取 */
+        case 0x3A: {/*Temperature limit read */
             uint8_t limit = 0;
             SerialServoCommandTypeDef *cmd = (SerialServoCommandTypeDef *)frame->data_and_checksum;
             packet_serial_servo_report_init(&report, cmd->servo_id, cmd->cmd, serial_servo_read_temp_limit(&serial_servo_controller, cmd->servo_id, &limit));
@@ -321,14 +321,14 @@ static void packet_serial_servo_handle(struct PacketRawFrame *frame)
 
 
 /**
-* @brief PWM舵机串口命令回调处理
-* @param frame 数据帧
-* @retval void
+*@brief PWM servo serial command callback processing
+*@param frame dataframe
+*@retval void
 */
 static void packet_pwm_servo_handle(struct PacketRawFrame *frame)
 {
     switch(frame->data_and_checksum[0]) {
-        case 0x01: {    //多个舵机控制
+        case 0x01: {//Multiple servo control
             PWMServoSetMultiPositionCommandTypeDef *cmd = (PWMServoSetMultiPositionCommandTypeDef *)frame->data_and_checksum;
             for(int i = 0; i < cmd->servo_num; ++i) {
                 if(cmd->elements[i].servo_id <= 4) {
@@ -337,15 +337,15 @@ static void packet_pwm_servo_handle(struct PacketRawFrame *frame)
             }
             break;
         }
-        case 0x03: {    //单个舵机控制
+        case 0x03: {//Single servo control
             PWM_ServoSetPositionCommandTypeDef *cmd = (PWM_ServoSetPositionCommandTypeDef *)frame->data_and_checksum;
-            //上位机从1号舵机开始
+            //The upper computer starts with the servo number 1
             if(cmd->servo_id <= 4) {
                 pwm_servo_set_position( pwm_servos[cmd->servo_id - 1], cmd->pulse, cmd->duration );
             }
             break;
         }
-        case 0x05: { // 读取舵机当前位置
+        case 0x05: {//Read the current position of the servo
             PWM_ServoCommandTypeDef *cmd = (PWM_ServoCommandTypeDef*)frame->data_and_checksum;
             if(cmd->servo_id <= 4) {
                 uint16_t pulse = pwm_servos[cmd->servo_id - 1]->current_duty;
@@ -357,14 +357,14 @@ static void packet_pwm_servo_handle(struct PacketRawFrame *frame)
             }
             break;
         }
-        case 0x07: { // 设置舵机偏差
+        case 0x07: {//Set the servo deviation
             PWM_ServoCommandTypeDef *cmd = (PWM_ServoCommandTypeDef*)frame->data_and_checksum;
             if(cmd->servo_id <= 4) {
                 pwm_servo_set_offset(pwm_servos[cmd->servo_id - 1], ((int)((int8_t)cmd->args[0])));
             }
             break;
         }
-        case 0x09: { // 读取舵机偏差
+        case 0x09: {//Read the servo deviation
             PWM_ServoCommandTypeDef *cmd = (PWM_ServoCommandTypeDef*)frame->data_and_checksum;
             if(cmd->servo_id <= 4) {
                 int offset = pwm_servos[cmd->servo_id - 1]->offset;
@@ -382,9 +382,9 @@ static void packet_pwm_servo_handle(struct PacketRawFrame *frame)
 }
 
 /**
-* @brief 马达控制串口回调处理
-* @param frame 数据帧
-* @retval void
+*@brief Motor control serial port callback processing
+*@param frame dataframe
+*@retval void
 */
 static void packet_motor_handle(struct PacketRawFrame *frame)
 {
@@ -418,10 +418,10 @@ static void packet_motor_handle(struct PacketRawFrame *frame)
             break;
         }
         
-        case 5: { //电机类型切换
+        case 5: {//Motor type switching
             MotorTypeCtlTypeDef *mmsc = (MotorTypeCtlTypeDef *)frame->data_and_checksum;
             MotorTypeEnum type = MOTOR_TYPE_JGB520;
-//            printf("type:%d",mmsc->type);
+//           printf("type:%d",mmsc->type);
             if(mmsc->type == MOTOR_TYPE_JGB520){
                 type = MOTOR_TYPE_JGB520;
             }else if(mmsc->type == MOTOR_TYPE_JGB37){
@@ -445,9 +445,9 @@ static void packet_motor_handle(struct PacketRawFrame *frame)
 
 
 /**
-* @brief 电池报警设置回调处理
-* @param frame 数据帧
-* @retval void
+*@brief Battery alarm setting callback processing
+*@param frame dataframe
+*@retval void
 */
 static void packet_battery_limit_handle(struct PacketRawFrame *frame)
 {
@@ -463,19 +463,19 @@ static void packet_battery_limit_handle(struct PacketRawFrame *frame)
 
 
 /**
-* @brief RGB控制
-* @param frame 数据帧
-* @retval void
+*@brief RGB control
+*@param frame dataframe
+*@retval void
 */
 static void packet_RGB_Ctl_handle(struct PacketRawFrame *frame)
 {
     RGBCtlTypeDef *cmd = (RGBCtlTypeDef*)frame->data_and_checksum;
     switch(cmd->id) {
         case 0: {
-//            for(int i = 0 ; i < Pixel_S1_NUM ; i++)
-//            {
-//                set_id_rgb_color(i , &cmd->data[i*3]);
-//            }
+//           for(int i = 0 ; i < Pixel_S1_NUM ; i++)
+//           {
+//               set_id_rgb_color(i , &cmd->data[i*3]);
+//           }
             set_rgb_color(cmd->data);
         }break;
         

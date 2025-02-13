@@ -1,11 +1,11 @@
 /**
- * @file button_portting.c
- * @author Lu Yongping (Lucas@hiwonder.com)
- * @brief 板载按键接口实例及接口
- * @version 0.1
- * @date 2023-05-18
+ *@file button_portting.c
+ *@author Lu Yongping (Lucas@hiwonder.com)
+ *@brief onboard key interface example and interface
+ *@version 0.1
+ *@date 2023-05-18
  *
- * @copyright Copyright (c) 2023
+ *@copyright Copyright (c) 2023
  *
  */
 
@@ -17,9 +17,9 @@
 #include "gpio.h"
 #include "lwmem_porting.h"
 
-// 全系统全局变量
+//Global variables in the whole system
 ButtonObjectTypeDef* buttons[2];
-static uint32_t button_read_pin(ButtonObjectTypeDef *self); /* 读取按键IO状态 */
+static uint32_t button_read_pin(ButtonObjectTypeDef *self);/*Read key IO status */
 
 
 void buttons_init(void)
@@ -50,9 +50,9 @@ static uint32_t button_read_pin(ButtonObjectTypeDef *self)
 
 
 /**
- * @brief 定时器回调进行按键扫描
+ *@brief timer callback for key scanning
  *
- * @param argument
+ *@param argument
  */
 void button_timer_callback(void *argument)
 {

@@ -1,12 +1,12 @@
 /**
- * @file led_portting.c
- * @author Lu Yongping (Lucas@hiwonder.com)
- * @brief 板载LED灯控制实例及接口实现
- * @version 0.1
- * @date 2023-05-23
- * 
- * @copyright Copyright (c) 2023
- * 
+ *@file led_portting.c
+ *@author Lu Yongping (Lucas@hiwonder.com)
+ *@brief onboard LED light control example and interface implementation
+ *@version 0.1
+ *@date 2023-05-23
+ *
+ *@copyright Copyright (c) 2023
+ *
  */
 
 #include "led.h"
@@ -15,21 +15,21 @@
 #include "packet.h"
 #include "lwmem_porting.h"
 
-/* 全系统全局变量 */
+/*System-wide global variables */
 LEDObjectTypeDef *leds[LED_NUM];
-static osMessageQueueId_t led_ctrl_ququeHandle[LED_NUM]; /* LED1 控制队列Handle */
+static osMessageQueueId_t led_ctrl_ququeHandle[LED_NUM];/*LED1 control queue Handle */
 
-static void led_set_pin(LEDObjectTypeDef *self, uint32_t level);   /* LED_SYS 灯写 IO 口接口 */
-static int put_ctrl_block(LEDObjectTypeDef *self, LEDCtrlTypeDef *p);   /* 控制入队接口 */
-static int get_ctrl_block(LEDObjectTypeDef *self, LEDCtrlTypeDef *p);   /* 控制出队接口 */
+static void led_set_pin(LEDObjectTypeDef *self, uint32_t level);/*LED_SYS LED write IO port interface */
+static int put_ctrl_block(LEDObjectTypeDef *self, LEDCtrlTypeDef *p);/*Control the enqueue interface */
+static int get_ctrl_block(LEDObjectTypeDef *self, LEDCtrlTypeDef *p);/*Control the dequeue interface */
 
 /**
-  * @brief 初始化led相关内存、变量
-  * @retval None.
+  *@brief Initialize LED-related memory and variables
+  *@retval None.
 */
 void leds_init(void)
 {
-	/* 建立 LED1 控制队列 */
+/*Create LED1 control queue */
 	const osMessageQueueAttr_t led_ctrl_quque_attributes[LED_NUM] = {{ .name = "led1_ctrl_quque" },
                                                                       { .name = "led2_ctrl_quque" },
                                                                       { .name = "led3_ctrl_quque" }};
@@ -44,13 +44,13 @@ void leds_init(void)
         leds[i]->put_ctrl_block = put_ctrl_block;
     }
 
-   // packet_register_callback(&packet_controller, PACKET_FUNC_LED, packet_handler);
+   //packet_register_callback(&packet_controller, PACKET_FUNC_LED, packet_handler);
 }
 
 /**
-  * @brief 定时器回调
-  * @detials 定时刷新LED灯状态
-  * @retval None.
+  *@brief timer callback
+  *@detials Refresh LED status regularly
+  *@retval None.
   *
 */
 void led_timer_callback(void *argument) {
@@ -74,10 +74,10 @@ static void led_set_pin(LEDObjectTypeDef *self, uint32_t level)
 
 
 /**
-  * @brief LED控制队列入队接口
-  * @param [in] p 要出队的控制参数结构体指针
-  * @retval 0 成功
-  * @retval !=0 失败 
+  *@brief LED control queued interface
+  *@param [in] p Pointer for the control parameter structure to be dequeued
+  *@retval 0 Success
+  *@retval !=0 Failed
   *
 */
 static int put_ctrl_block(LEDObjectTypeDef *self, LEDCtrlTypeDef *p) {
@@ -91,10 +91,10 @@ static int put_ctrl_block(LEDObjectTypeDef *self, LEDCtrlTypeDef *p) {
 }
 
 /**
-  * @brief LED 控制队列出队接口
-  * @param [out] p 出队数据的存储指针
-  * @retval 0 成功
-  * @retval !=0 失败 
+  *@brief LED control queue queuing interface
+  *@param [out] p Storage pointer for dequeuing data
+  *@retval 0 Success
+  *@retval !=0 Failed
   *
 */
 static int get_ctrl_block(LEDObjectTypeDef *self, LEDCtrlTypeDef *p) {

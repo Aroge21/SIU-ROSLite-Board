@@ -1,7 +1,7 @@
 /**
  * @file lwmem_porting.h
  * @author Lu Yongping (Lucas@hiwonder.com)
- * @brief lwmem 接口移植及内存空间定义
+ * @brief lwmem Interface migration and memory space definition
  * @version 0.1
  * @date 2023-06-02
  *

@@ -1,7 +1,7 @@
 /**
  * @file packet_reports.h
  * @author Lu Yongping (Lucas@hiwonder.com)
- * @brief 所有串口通信数据回报
+ * @brief All serial communication data returns
  * @version 0.1
  * @date 2023-05-31
  *

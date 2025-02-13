@@ -1,5 +1,5 @@
 //
-// Created by lucas on 2022-08-29.
+//Created by lucas on 2022-08-29.
 //
 
 #include <stdio.h>
@@ -10,14 +10,14 @@
 #include <string.h>
 
 #define GET_LOW_BYTE(A) ((uint8_t)(A))
-//宏函数 获得A的低八位
+//Macro function gets the lower eight digits of A
 #define GET_HIGH_BYTE(A) ((uint8_t)((A) >> 8))
-//宏函数 获得A的高八位
+//Macro function Get the high eight digits of A
 #define BYTE_TO_HW(A, B) ((((uint16_t)(A)) << 8) | (uint8_t)(B))
-//宏函数 将高地八位合成为十六位
+//Macro function combines eight highland bits into sixteen bits
 
 
-/* 自动填充数据帧的帧头、ID、命令字段 */
+/*Automatically fill the frame header, ID, and command fields */
 static void cmd_frame_init(SerialServoCmdTypeDef *frame, int servo_id, int cmd)
 {
     frame->header_1 = SERIAL_SERVO_FRAME_HEADER;
@@ -26,7 +26,7 @@ static void cmd_frame_init(SerialServoCmdTypeDef *frame, int servo_id, int cmd)
     frame->elements.command = cmd;
 }
 
-/* 自动填充数据帧的数据长度、校验值字段 */
+/*Automatically fill the data length and verification value fields of the data frame */
 static void cmd_frame_complete(SerialServoCmdTypeDef *frame, int args_num)
 {
     frame->elements.length = args_num + 3;

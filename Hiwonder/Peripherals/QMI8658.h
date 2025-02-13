@@ -15,19 +15,19 @@ typedef struct
 
 struct QMI8658
 {
-  uint8_t last_status; // status of last I2C transmission
+  uint8_t last_status;//status of last I2C transmission
   int16_t ax, ay, az, gx, gy, gz;
   float pith, roll, yaw;
   unsigned long now, lastTime;
-  float dt;      //微分时间
-  float agz; //角度变量
-  long gzo;  //陀螺仪偏移量
+  float dt;//Differential time
+  float agz;//Angle variable
+  long gzo;//Gyro offset
     
     uint8_t (*read_reg)(uint8_t reg);
     void (*write_reg)(uint8_t reg,uint8_t value);
     uint16_t (*readWord_reg)(uint8_t reg);
 
-    // bool init(void);
+    //bool init(void);
     bool (*GetEulerAngles)(float *pitch,float *roll, float *yaw);
     void (*config_acc)(enum qmi8658_AccRange range, enum qmi8658_AccOdr odr, enum qmi8658_LpfConfig lpfEnable, enum qmi8658_StConfig stEnable);
     void (*config_gyro)(enum qmi8658_GyrRange range, enum qmi8658_GyrOdr odr, enum qmi8658_LpfConfig lpfEnable, enum qmi8658_StConfig stEnable);
@@ -47,7 +47,7 @@ uint8_t read_reg(uint8_t reg);
 void write_reg(uint8_t reg,uint8_t value);
 uint16_t readWord_reg(uint8_t reg);
 
-// bool init(void);
+//bool init(void);
 bool GetEulerAngles(float *pitch,float *roll, float *yaw);
 void config_acc(enum qmi8658_AccRange range, enum qmi8658_AccOdr odr, enum qmi8658_LpfConfig lpfEnable, enum qmi8658_StConfig stEnable);
 void config_gyro(enum qmi8658_GyrRange range, enum qmi8658_GyrOdr odr, enum qmi8658_LpfConfig lpfEnable, enum qmi8658_StConfig stEnable);
@@ -66,15 +66,15 @@ void qmi8658_on_demand_cali(void);
   QMI8658C UI Sensor Configuration Settings and Output Data
 */
 ///<Configuration Registers>
-#define QMI8658_ADDR 0X6A  //device address
-#define WHO_AM_I 0X00 //Device identifier
-#define CTRL1 0x02    //Serial Interface and Sensor Enable
-#define CTRL2 0x03    //Accelerometer Settings
-#define CTRL3 0x04    //Gyroscope Settings
-#define CTRL4 0X05    //Magnetometer Settings
-#define CTRL5 0X06    //Sensor Data Processing Settings
-#define CTRL7 0x08    //Enable Sensors and Configure Data Reads
-#define CTRL8 0X09    //Reserved – Special Settings
+#define QMI8658_ADDR 0X6A//device address
+#define WHO_AM_I 0X00//Device identifier
+#define CTRL1 0x02//Serial Interface and Sensor Enable
+#define CTRL2 0x03//Accelerometer Settings
+#define CTRL3 0x04//Gyroscope Settings
+#define CTRL4 0X05//Magnetometer Settings
+#define CTRL5 0X06//Sensor Data Processing Settings
+#define CTRL7 0x08//Enable Sensors and Configure Data Reads
+#define CTRL8 0X09//Reserved – Special Settings
 
 ///<Sensor Data Output Registers>
 #define AccX_L 0x35
@@ -91,6 +91,6 @@ void qmi8658_on_demand_cali(void);
 #define GyrY_H 0x3E
 #define GyrZ_L 0x3F
 #define GyrZ_H 0x40
-// int16_t QMI8658C_readBytes(unsigned char tmp);
+//int16_t QMI8658C_readBytes(unsigned char tmp);
 //extern QMI8658C _QMI8658C;
 #endif

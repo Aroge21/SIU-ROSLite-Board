@@ -1,11 +1,11 @@
 /**
- * @file checksum.h
- * @author Lu Yongping (Lucas@hiwonder.com)
- * @brief 几种校验算法函数声明
- * @version 0.1
- * @date 2023-05-20
+ *@file checksum.h
+ *@author Lu Yongping (Lucas@hiwonder.com)
+ *@brief Function declarations of several verification algorithms
+ *@version 0.1
+ *@date 2023-05-20
  *
- * @copyright Copyright (c) 2023
+ *@copyright Copyright (c) 2023
  *
  */
  
@@ -17,47 +17,47 @@
 
 /**
 *@defgroup Checksum Checksum
-* @{
+*@{
 */
 
 /**
-* @brief 累加和校验
-* @param buf 要进行计算的数据
-* @param len 要进行计算的数据的字节数
-* @return 累加和结果, 只有低八位有效
+*@brief accumulation and verification
+*@param buf Data to be calculated
+*@param len Number of bytes of data to be calculated
+*@return Accumulation and result, only the lower eight digits are valid
 */
 uint16_t checksum_sum(const uint8_t *buf, uint16_t len);
 
 /**
- * @brief 异或校验 
- * @details 计算所有字节的异或结果
- * @param buf 要进行计算的数据
- * @param len 要进行计算的数据的字节数
- * @return 异或校验结果, 只有低八位有效
+ *@brief Exclusive Or verification
+ *@details Calculate the XOR result of all bytes
+ *@param buf Data to be calculated
+ *@param len Number of bytes of data to be calculated
+ *@return XOR verification result, only the lower eight digits are valid
  */
 uint16_t checksum_xor(const uint8_t *buf, uint16_t len);  
 
 /**
- * @brief CRC8校验
- * @details 对输入数据进行CRC8校验并返回校验结果
- * @param buf 要进行计算的数据
- * @param len 要进行计算的数据的字节数
- * @return CRC8校验结果, 只有低8位有效
+ *@brief CRC8 verification
+ *@details CRC8 verification of the input data and return the verification result
+ *@param buf Data to be calculated
+ *@param len Number of bytes of data to be calculated
+ *@return CRC8 verification result, only the lower 8 bits are valid
  */
-uint16_t checksum_crc8(const uint8_t *buf, uint16_t len);  /* CRC8 校验 */
+uint16_t checksum_crc8(const uint8_t *buf, uint16_t len);/*CRC8 Verification */
 
 
 /**
- * @brief CRC16校验
- * @details 对输入数据进行CRC16校验并返回校验结果
- * @param buf 要进行计算的数据
- * @param len  要进行计算的数据的字节数
- * @return CRC16校验结果 
+ *@brief CRC16 verification
+ *@details CRC16 verification of the input data and return the verification result
+ *@param buf Data to be calculated
+ *@param len Number of bytes of data to be calculated
+ *@return CRC16 verification result
  */
-uint16_t checksum_crc16(const uint8_t *buf, uint16_t len); /* CRC16 校验 */
+uint16_t checksum_crc16(const uint8_t *buf, uint16_t len);/*CRC16 Verification */
 
 /**
- * @} 
+ *@} 
  */
 
-#endif /* __CHECK_H__ */
+#endif/*__CHECK_H__ */

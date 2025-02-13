@@ -12,12 +12,12 @@ static qmi8658_state g_imu;
 
 #define Kp 10.0f               
 #define Ki 0.008f            
-/* #define pi 3.14159265f */
-#define halfT 0.002127f        /*half the sample period*/
-/* 参与计算的加速度单位g 陀螺仪单位是弧度/s()【度*pi/180=弧度】*/
+/*#define pi 3.14159265f */
+#define halfT 0.002127f/*half the sample period*/
+/*The acceleration unit g participating in the calculation The gyroscope unit is radian/s() [degree*pi/180=radian]*/
 
 
-/* 魔法函数InvSqrt()相当于1.0/sqrt() */
+/*Magic function InvSqrt() is equivalent to 1.0/sqrt() */
 static float invSqrt(float number)
 {
     volatile long i;
@@ -38,7 +38,7 @@ EulerAngles get_euler_angles(float gx, float gy, float gz, float ax, float ay, f
   EulerAngles eulaer;
   float roll, pitch,yaw ;
   float exInt, eyInt, ezInt;
-  float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;	/** quaternion of sensor frame relative to auxiliary frame */
+  float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;/**quaternion of sensor frame relative to auxiliary frame */
 
     float recipNorm;
     float vx, vy, vz;
@@ -59,20 +59,20 @@ EulerAngles get_euler_angles(float gx, float gy, float gz, float ax, float ay, f
 
     if( ax*ay*az==0)
         return eulaer;
-    /* 对加速度数据进行归一化处理 */
+/*Normalize acceleration data */
     recipNorm = invSqrt( ax* ax +ay*ay + az*az);
     ax = ax *recipNorm;
     ay = ay *recipNorm;
     az = az *recipNorm;
-    /* DCM矩阵旋转 */
+/*DCM matrix rotation */
     vx = 2*(q1q3 - q0q2);
     vy = 2*(q0q1 + q2q3);
     vz = q0q0 - q1q1 - q2q2 + q3q3 ;
-    /* 在机体坐标系下做向量叉积得到补偿数据 */
+/*Make vector cross product under body coordinate system to get compensation data */
     ex = ay*vz - az*vy ;
     ey = az*vx - ax*vz ;
     ez = ax*vy - ay*vx ;
-    /* 对误差进行PI计算，补偿角速度 */
+/*Perform PI calculation of the error and compensate for the angular velocity */
     exInt = exInt + ex * Ki;
     eyInt = eyInt + ey * Ki;
     ezInt = ezInt + ez * Ki;
@@ -80,7 +80,7 @@ EulerAngles get_euler_angles(float gx, float gy, float gz, float ax, float ay, f
     gx = gx + Kp*ex + exInt;
     gy = gy + Kp*ey + eyInt;
     gz = gz + Kp*ez + ezInt;
-    /* 按照四元素微分公式进行四元素更新 */
+/*Update four elements according to the four elements differential formula */
     q0 = q0 + (-q1*gx - q2*gy - q3*gz)*halfT;
     q1 = q1 + (q0*gx + q2*gz - q3*gy)*halfT;
     q2 = q2 + (q0*gy - q1*gz + q3*gx)*halfT;
@@ -101,7 +101,7 @@ EulerAngles get_euler_angles(float gx, float gy, float gz, float ax, float ay, f
     eulaer.roll = roll;
     eulaer.yaw = yaw;
 
-    // printf("pitch:%.2f roll:%.2f yaw:%.2f\r\n",pitch,roll,yaw);
+    //printf("pitch:%.2f roll:%.2f yaw:%.2f\r\n",pitch,roll,yaw);
     return eulaer;
 }
 
@@ -156,25 +156,25 @@ void read_sensor_data(float acc[3], float gyro[3])
 	raw_gyro_xyz[2] = (short)((unsigned short)( readWord_reg(Qmi8658Register_Gz_L) ));
 
 #if defined(QMI8658_UINT_MG_DPS)
-	// mg
+	//mg
 	acc[0] = (float)(raw_acc_xyz[0]*1000.0f)/g_imu.ssvt_a;
 	acc[1] = (float)(raw_acc_xyz[1]*1000.0f)/g_imu.ssvt_a;
 	acc[2] = (float)(raw_acc_xyz[2]*1000.0f)/g_imu.ssvt_a;
 #else
-	// m/s2
+	//m/s2
 	acc[0] = (float)(raw_acc_xyz[0]*ONE_G)/g_imu.ssvt_a;
 	acc[1] = (float)(raw_acc_xyz[1]*ONE_G)/g_imu.ssvt_a;
 	acc[2] = (float)(raw_acc_xyz[2]*ONE_G)/g_imu.ssvt_a;
 #endif
 
 #if defined(QMI8658_UINT_MG_DPS)
-	// dps
+	//dps
 	gyro[0] = (float)(raw_gyro_xyz[0]*1.0f)/g_imu.ssvt_g;
 	gyro[1] = (float)(raw_gyro_xyz[1]*1.0f)/g_imu.ssvt_g;
 	gyro[2] = (float)(raw_gyro_xyz[2]*1.0f)/g_imu.ssvt_g;
 #else
-	// rad/s
-	gyro[0] = (float)(raw_gyro_xyz[0]*M_PI)/(g_imu.ssvt_g*180);		// *pi/180
+	//rad/s
+	gyro[0] = (float)(raw_gyro_xyz[0]*M_PI)/(g_imu.ssvt_g*180);//*pi/180
 	gyro[1] = (float)(raw_gyro_xyz[1]*M_PI)/(g_imu.ssvt_g*180);
 	gyro[2] = (float)(raw_gyro_xyz[2]*M_PI)/(g_imu.ssvt_g*180);
 #endif
@@ -240,7 +240,7 @@ void read_xyz(float acc[3], float gyro[3])
 	if(status&0x01)
 	{
 		data_ready = 1;
-		qmi8658_delay_us(6);	// delay 6us
+		qmi8658_delay_us(6);//delay 6us
 	}
 #else
 	status = read_reg(Qmi8658Register_Status0);
@@ -305,7 +305,7 @@ void config_acc(enum qmi8658_AccRange range, enum qmi8658_AccOdr odr, enum qmi86
 		ctl_dada = (unsigned char)range|(unsigned char)odr;
 		
 	write_reg(Qmi8658Register_Ctrl2, ctl_dada);
-// set LPF & HPF
+//set LPF & HPF
 	ctl_dada = read_reg(Qmi8658Register_Ctrl5);
 	ctl_dada &= 0xf0;
 	if(lpfEnable == Qmi8658Lpf_Enable)
@@ -319,15 +319,15 @@ void config_acc(enum qmi8658_AccRange range, enum qmi8658_AccOdr odr, enum qmi86
 	}
 	//ctl_dada = 0x00;
 	write_reg(Qmi8658Register_Ctrl5,ctl_dada);
-// set LPF & HPF
+//set LPF & HPF
 }
 
 void config_gyro(enum qmi8658_GyrRange range, enum qmi8658_GyrOdr odr, enum qmi8658_LpfConfig lpfEnable, enum qmi8658_StConfig stEnable)
 {
-	// Set the CTRL3 register to configure dynamic range and ODR
+	//Set the CTRL3 register to configure dynamic range and ODR
 	unsigned char ctl_dada; 
 
-	// Store the scale factor for use when processing raw data
+	//Store the scale factor for use when processing raw data
 	switch (range)
 	{
 		case Qmi8658GyrRange_16dps:
@@ -369,8 +369,8 @@ void config_gyro(enum qmi8658_GyrRange range, enum qmi8658_GyrOdr odr, enum qmi8
 		ctl_dada = (unsigned char)range | (unsigned char)odr;
 	write_reg(Qmi8658Register_Ctrl3, ctl_dada);
 
-// Conversion from degrees/s to rad/s if necessary
-// set LPF & HPF
+//Conversion from degrees/s to rad/s if necessary
+//set LPF & HPF
 	ctl_dada = read_reg(Qmi8658Register_Ctrl5);
 	ctl_dada &= 0x0f;
 	if(lpfEnable == Qmi8658Lpf_Enable)
@@ -384,7 +384,7 @@ void config_gyro(enum qmi8658_GyrRange range, enum qmi8658_GyrOdr odr, enum qmi8
 	}
 	//ctl_dada = 0x00;
 	write_reg(Qmi8658Register_Ctrl5,ctl_dada);
-// set LPF & HPF
+//set LPF & HPF
 }
 
 void enableSensors(unsigned char enableFlags)
@@ -460,15 +460,15 @@ unsigned char get_id(void)
 			//QMI8658_INT1_ENABLE, QMI8658_INT2_ENABLE
 			write_reg(Qmi8658Register_Ctrl1, 0x60|QMI8658_INT2_ENABLE|QMI8658_INT1_ENABLE);
 			qmi8658_revision_id = read_reg(Qmi8658Register_Revision);			
-			// qmi8658_read_reg(Qmi8658Register_firmware_id, firmware_id, 3);
-			// qmi8658_read_reg(Qmi8658Register_uuid, uuid, 6);
+			//qmi8658_read_reg(Qmi8658Register_firmware_id, firmware_id, 3);
+			//qmi8658_read_reg(Qmi8658Register_uuid, uuid, 6);
 			write_reg(Qmi8658Register_Ctrl7, 0x00);
 			write_reg(Qmi8658Register_Ctrl8, g_imu.cfg.ctrl8_value);
-			// uuid_low = (unsigned int)((unsigned int)(uuid[2]<<16)|(unsigned int)(uuid[1]<<8)|(uuid[0]));
-			// uuid_high = (unsigned int)((unsigned int)(uuid[5]<<16)|(unsigned int)(uuid[4]<<8)|(uuid[3]));
-			// qmi8658_log("qmi8658_init slave=0x%x Revision=0x%x\n", g_imu.slave, qmi8658_revision_id);
-			// qmi8658_log("Firmware ID[0x%x 0x%x 0x%x]\n", firmware_id[2], firmware_id[1],firmware_id[0]);
-			// qmi8658_log("UUID[0x%x %x]\n", uuid_high ,uuid_low);
+			//uuid_low = (unsigned int)((unsigned int)(uuid[2]<<16)|(unsigned int)(uuid[1]<<8)|(uuid[0]));
+			//uuid_high = (unsigned int)((unsigned int)(uuid[5]<<16)|(unsigned int)(uuid[4]<<8)|(uuid[3]));
+			//qmi8658_log("qmi8658_init slave=0x%x Revision=0x%x\n", g_imu.slave, qmi8658_revision_id);
+			//qmi8658_log("Firmware ID[0x%x 0x%x 0x%x]\n", firmware_id[2], firmware_id[1],firmware_id[0]);
+			//qmi8658_log("UUID[0x%x %x]\n", uuid_high ,uuid_low);
 			break;
 		}
 		iCount++;
@@ -482,11 +482,11 @@ void qmi8658_on_demand_cali(void)
 {
 //	printf("qmi8658_on_demand_cali start\n");
 	write_reg(Qmi8658Register_Reset, 0xb0);
-	osDelay(10);	// delay
+	osDelay(10);//delay
 	write_reg(Qmi8658Register_Ctrl9, (unsigned char)qmi8658_Ctrl9_Cmd_On_Demand_Cali);
-	osDelay(2200);	// delay 2000ms above
+	osDelay(2200);//delay 2000ms above
 	write_reg(Qmi8658Register_Ctrl9, (unsigned char)qmi8658_Ctrl9_Cmd_NOP);
-	osDelay(100);	// delay
+	osDelay(100);//delay
 //	printf("qmi8658_on_demand_cali done\n");
 }
 
@@ -511,7 +511,7 @@ unsigned char begin(void)
 	}
 	else
 	{
-		// Serial.print("qmi8658_init fail\n");
+		//Serial.print("qmi8658_init fail\n");
 		return 0;
 	}
 }
@@ -519,10 +519,10 @@ unsigned char begin(void)
 
 void dump_reg(void)
 {
-	// unsigned char read_data[8];
+	//unsigned char read_data[8];
 
-	// qmi8658_read_reg(Qmi8658Register_Ctrl1, read_data, 8);
-	// qmi8658_log("Ctrl1[0x%x]\nCtrl2[0x%x]\nCtrl3[0x%x]\nCtrl4[0x%x]\nCtrl5[0x%x]\nCtrl6[0x%x]\nCtrl7[0x%x]\nCtrl8[0x%x]\n",
-	// 				read_data[0],read_data[1],read_data[2],read_data[3],read_data[4],read_data[5],read_data[6],read_data[7]);	
+	//qmi8658_read_reg(Qmi8658Register_Ctrl1, read_data, 8);
+	//qmi8658_log("Ctrl1[0x%x]\nCtrl2[0x%x]\nCtrl3[0x%x]\nCtrl4[0x%x]\nCtrl5[0x%x]\nCtrl6[0x%x]\nCtrl7[0x%x]\nCtrl8[0x%x]\n",
+	//				read_data[0],read_data[1],read_data[2],read_data[3],read_data[4],read_data[5],read_data[6],read_data[7]);
 }
 

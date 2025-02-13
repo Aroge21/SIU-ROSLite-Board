@@ -4,7 +4,7 @@
 #include "motors_param.h"
 #include "motor_porting.h"
 
-/* 全局变量 */
+/* Global variables */
 EncoderMotorObjectTypeDef *motors[4];
 /* static void packet_handler(struct PacketRawFrame *frame); */
 
@@ -23,22 +23,22 @@ void set_motor_param(EncoderMotorObjectTypeDef *motor, int32_t tpc, float rps_li
 }
 
 void set_motor_type(EncoderMotorObjectTypeDef *motor, MotorTypeEnum type) {
-	switch(type) {
-		case MOTOR_TYPE_JGB520:
-			set_motor_param(motor, MOTOR_JGB520_TICKS_PER_CIRCLE, MOTOR_JGB520_RPS_LIMIT, MOTOR_JGB520_PID_KP, MOTOR_JGB520_PID_KI, MOTOR_JGB520_PID_KD);
-			break;
-		case MOTOR_TYPE_JGB37:
-			set_motor_param(motor, MOTOR_JGB37_TICKS_PER_CIRCLE, MOTOR_JGB37_RPS_LIMIT, MOTOR_JGB37_PID_KP, MOTOR_JGB37_PID_KI, MOTOR_JGB37_PID_KD);
-			break;
-		case MOTOR_TYPE_JGA27:
-			set_motor_param(motor, MOTOR_JGA27_TICKS_PER_CIRCLE, MOTOR_JGA27_RPS_LIMIT, MOTOR_JGA27_PID_KP, MOTOR_JGA27_PID_KI, MOTOR_JGA27_PID_KD);
-			break;
-		case MOTOR_TYPE_JGB528:
-			set_motor_param(motor, MOTOR_JGB528_TICKS_PER_CIRCLE, MOTOR_JGB528_RPS_LIMIT, MOTOR_JGB528_PID_KP, MOTOR_JGB528_PID_KI, MOTOR_JGB528_PID_KD);
-			break;
-		default:
-			break;
-	}
+    switch(type) {
+        case MOTOR_TYPE_JGB520:
+            set_motor_param(motor, MOTOR_JGB520_TICKS_PER_CIRCLE, MOTOR_JGB520_RPS_LIMIT, MOTOR_JGB520_PID_KP, MOTOR_JGB520_PID_KI, MOTOR_JGB520_PID_KD);
+            break;
+        case MOTOR_TYPE_JGB37:
+            set_motor_param(motor, MOTOR_JGB37_TICKS_PER_CIRCLE, MOTOR_JGB37_RPS_LIMIT, MOTOR_JGB37_PID_KP, MOTOR_JGB37_PID_KI, MOTOR_JGB37_PID_KD);
+            break;
+        case MOTOR_TYPE_JGA27:
+            set_motor_param(motor, MOTOR_JGA27_TICKS_PER_CIRCLE, MOTOR_JGA27_RPS_LIMIT, MOTOR_JGA27_PID_KP, MOTOR_JGA27_PID_KI, MOTOR_JGA27_PID_KD);
+            break;
+        case MOTOR_TYPE_JGB528:
+            set_motor_param(motor, MOTOR_JGB528_TICKS_PER_CIRCLE, MOTOR_JGB528_RPS_LIMIT, MOTOR_JGB528_PID_KP, MOTOR_JGB528_PID_KI, MOTOR_JGB528_PID_KD);
+            break;
+        default:
+            break;
+    }
 }
 
 void motors_init(void)
@@ -46,24 +46,24 @@ void motors_init(void)
     for(int i = 0; i < 4; ++i) {
         motors[i] = LWMEM_CCM_MALLOC(sizeof( EncoderMotorObjectTypeDef));
         encoder_motor_object_init(motors[i]);
-			//将总计数值、溢出总数、计数器频率、输出轴转速、当前输出的PWM值、计数溢出值清零
-      //将PID 控制器目标值输出轴旋转一圈产生的计数个数=9999
-		    motors[i]->ticks_overflow = 60000;                             //60000次计数溢出一次
-        motors[i]->ticks_per_circle = MOTOR_DEFAULT_TICKS_PER_CIRCLE;  //电机输出轴旋转一圈产生的1个计数
-        motors[i]->rps_limit = MOTOR_DEFAULT_RPS_LIMIT;                //转数极限1.35转/s
-        motors[i]->pid_controller.set_point = 0.0f;                    //PID 控制器目标值=0
+        // Reset total count, overflow count, counter frequency, output shaft speed, current PWM value, and overflow count
+        // Set PID controller target value to 0 and ticks per circle to 9999
+        motors[i]->ticks_overflow = 60000;                             // Overflow after 60000 counts
+        motors[i]->ticks_per_circle = MOTOR_DEFAULT_TICKS_PER_CIRCLE;  // 1 count per rotation of the motor output shaft
+        motors[i]->rps_limit = MOTOR_DEFAULT_RPS_LIMIT;                // Speed limit 1.35 rotations/s
+        motors[i]->pid_controller.set_point = 0.0f;                    // PID controller target value = 0
         motors[i]->pid_controller.kp = MOTOR_DEFAULT_PID_KP;              
         motors[i]->pid_controller.ki = MOTOR_DEFAULT_PID_KI;
         motors[i]->pid_controller.kd = MOTOR_DEFAULT_PID_KD;
     }
 
-    /* 马达 1 */
-    motors[0]->set_pulse = motor1_set_pulse;                           //关联motor1_set_pulse函数到motors[0]
+    /* Motor 1 */
+    motors[0]->set_pulse = motor1_set_pulse;                           // Associate motor1_set_pulse function with motors[0]
     __HAL_TIM_SET_COUNTER(&htim1, 0);
-    __HAL_TIM_ENABLE(&htim1);                                          /* 启动PWM信号生成定时器 */
-    __HAL_TIM_MOE_ENABLE(&htim1);                                      /* 开启PWM信号输出 */
+    __HAL_TIM_ENABLE(&htim1);                                          /* Start PWM signal generation timer */
+    __HAL_TIM_MOE_ENABLE(&htim1);                                      /* Enable PWM signal output */
 
-    /* 编码器 */
+    /* Encoder */
     __HAL_TIM_SET_COUNTER(&htim5, 0);
     __HAL_TIM_CLEAR_IT(&htim5, TIM_IT_UPDATE);
     __HAL_TIM_ENABLE_IT(&htim5, TIM_IT_UPDATE);
@@ -71,33 +71,33 @@ void motors_init(void)
     HAL_TIM_Encoder_Start(&htim5, TIM_CHANNEL_ALL);
 
 
-    /* 马达 2 */
+    /* Motor 2 */
     motors[1]->set_pulse = motor2_set_pulse;
     __HAL_TIM_SET_COUNTER(&htim1, 0);
     __HAL_TIM_ENABLE(&htim1);
     __HAL_TIM_MOE_ENABLE(&htim1);
 
-    /* 编码器 */
+    /* Encoder */
     __HAL_TIM_SET_COUNTER(&htim2, 0);
     __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
     __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
     __HAL_TIM_ENABLE(&htim2);
     HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 
-    /* 马达 3 */
+    /* Motor 3 */
     motors[2]->set_pulse = motor3_set_pulse;
     __HAL_TIM_SET_COUNTER(&htim9, 0);
     __HAL_TIM_ENABLE(&htim9);
     __HAL_TIM_MOE_ENABLE(&htim9);
 
-    /* 编码器 */
+    /* Encoder */
     __HAL_TIM_SET_COUNTER(&htim4, 0);
     __HAL_TIM_CLEAR_IT(&htim4, TIM_IT_UPDATE);
     __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
     __HAL_TIM_ENABLE(&htim4);
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
 
-    /* 马达 4 */
+    /* Motor 4 */
     motors[3]->set_pulse = motor4_set_pulse;
     __HAL_TIM_SET_COUNTER(&htim10, 0);
     __HAL_TIM_SET_COUNTER(&htim11, 0);
@@ -106,7 +106,7 @@ void motors_init(void)
     __HAL_TIM_MOE_ENABLE(&htim10);
     __HAL_TIM_MOE_ENABLE(&htim11);
 
-    /* 编码器 */
+    /* Encoder */
     __HAL_TIM_SET_COUNTER(&htim3, 0);
     __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
     __HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
@@ -114,7 +114,7 @@ void motors_init(void)
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
 
 
-    // 测速更新定时器
+    // Speed update timer
     __HAL_TIM_SET_COUNTER(&htim7, 0);
     __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
     __HAL_TIM_ENABLE_IT(&htim7, TIM_IT_UPDATE);
@@ -191,7 +191,3 @@ void motor4_set_pulse(EncoderMotorObjectTypeDef *self, int speed)
     HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
 }
-
-
-
-

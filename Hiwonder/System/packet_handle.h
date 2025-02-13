@@ -8,23 +8,23 @@
 
 
 /**
-* @brief 串口命令回调处理
-* @param frame 数据帧
-* @retval void
+*@brief Serial port command callback processing
+*@param frame dataframe
+*@retval void
 */
 void packet_led_handle(struct PacketRawFrame *frame);
 
 /**
-* @brief 串口命令回调处理
-* @param frame 数据帧
-* @retval void
+*@brief Serial port command callback processing
+*@param frame dataframe
+*@retval void
 */
 void packet_buzzer_handle(struct PacketRawFrame *frame);
 
 /**
-* @brief 串口命令回调处理
-* @param frame 数据帧
-* @retval void
+*@brief Serial port command callback processing
+*@param frame dataframe
+*@retval void
 */
 
 void packet_motor_handle(struct PacketRawFrame *frame);

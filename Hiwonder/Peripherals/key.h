@@ -1,4 +1,4 @@
-/// 实现硬件无关的按键检测
+///Implement hardware-independent key detection
 
 
 #ifndef __KEY_H_
@@ -34,25 +34,25 @@ typedef struct{
 
 typedef struct _KeyObjectTypeDef KeyObjectTypeDef;
 struct _KeyObjectTypeDef {
-	KeyStateEnum state;  // 当前按键状态机状态
+	KeyStateEnum state;//Current key state machine status
 
-	uint8_t last_level; // 上次直接读到的引脚电平
-	uint32_t stamp; // 
+	uint8_t last_level;//The pin level I read directly last time
+	uint32_t stamp;//
 	int combin_counter;
 
-	/* config */
-	int combin_th; /**< 连按最大间隔 毫秒*/
-	int lp_th;     /**< 长按阈值 毫秒 */
-	int repeat_th; /**< 长按重触发间隔 毫秒 */
+/*config */
+	int combin_th;/**< Maximum double-click interval milliseconds*/
+	int lp_th;/**< Long press the threshold milliseconds */
+	int repeat_th;/**< Long press and heavy trigger interval milliseconds */
 
-	// 内部暴露接口
-	void (*refresh)(KeyObjectTypeDef *self); //刷新按键状态
-	uint32_t (*get_ticks)(void); // 获取当前毫秒时间戳
+	//Internal exposed interface
+	void (*refresh)(KeyObjectTypeDef *self);//Refresh the button status
+	uint32_t (*get_ticks)(void);//Get the current millisecond time stamp
 	
-	// 移植接口
-	char *name;  //按钮名称
-	uint8_t level_press; // 按钮按下时 IO 电平
-	uint8_t (*read_pin)(void); //读取按键状态
+	//Migrate interface
+	char *name;//Button Name
+	uint8_t level_press;//IO level when the button is pressed
+	uint8_t (*read_pin)(void);//Read the key state
 	void (*event_callback)(KeyObjectTypeDef *key, KeyEventEnum event);
 };
 
